@@ -3,316 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 1. 페이지 제목 <title>에 "청렴" 또는 "신고" 포함 -->
-  <title>청렴포털 | 청렴감사관실 신고 사건 및 교육 현황 모니터링</title>
-  <meta name="description" content="시민과 함께하는 청렴감사관실 - 청렴 신고 사건 실시간 조회 및 청렴 교육 현황 모니터링 대시보드">
+  <title>지자체 협력사업 신청 관리 및 심사 대시보드</title>
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <!-- Header -->
   <header class="header">
-    <div class="container header-container">
-      <div class="logo-group">
+    <div class="header-container">
+      <div class="logo-area">
         <div class="logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
+          <i class="fa-solid fa-landmark-flag"></i>
         </div>
         <div>
-          <h1 class="logo-title">청렴감사관실 <span>청렴 모니터링 포털</span></h1>
-          <p class="logo-sub">시민과 함께 만들어가는 투명하고 공정한 청렴 사회</p>
+          <h1 class="logo-title">지자체 자치행정 협력사업 심사 시스템</h1>
+          <p class="logo-subtitle">2026년도 협력사업 신청 자료 분석 및 실시간 한도액 예산 심사</p>
         </div>
       </div>
       <div class="header-badges">
-        <span class="live-badge"><span class="pulse-dot"></span> 실시간 모니터링 운영 중</span>
+        <span class="live-status-badge"><i class="fa-solid fa-circle"></i> 실시간 심사 엔진 가동 중</span>
       </div>
     </div>
   </header>
 
-  <main class="main-content container">
-    <!-- KPI Summary Section -->
-    <section class="kpi-section" aria-label="주요 통계 지표">
-      <div class="kpi-card">
-        <div class="kpi-header">
-          <span class="kpi-label">총 신고 사건</span>
-          <span class="kpi-icon icon-blue">📋</span>
-        </div>
-        <div class="kpi-value" id="kpi-total">500<span class="unit">건</span></div>
-        <p class="kpi-desc">누적 청렴 신고 접수 건수</p>
-      </div>
-
-      <div class="kpi-card highlight-card">
-        <div class="kpi-header">
-          <span class="kpi-label">처리 완료 사건</span>
-          <span class="kpi-icon icon-green">✅</span>
-        </div>
-        <div class="kpi-value" id="kpi-completed">229<span class="unit">건</span></div>
-        <p class="kpi-desc">처리 완료율 <strong id="kpi-complete-rate">45.8%</strong></p>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-header">
-          <span class="kpi-label">평균 처리 기간</span>
-          <span class="kpi-icon icon-amber">⏱️</span>
-        </div>
-        <div class="kpi-value" id="kpi-avg-duration">52<span class="unit">일</span></div>
-        <p class="kpi-desc">신고 접수부터 종결까지 평균</p>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-header">
-          <span class="kpi-label">기관 평균 교육이수율</span>
-          <span class="kpi-icon icon-indigo">🎓</span>
-        </div>
-        <div class="kpi-value" id="kpi-avg-edu">76.8<span class="unit">%</span></div>
-        <p class="kpi-desc">120개 공공기관 대상 연간 교육</p>
-      </div>
-    </section>
-
-    <!-- Top Grid: Types Breakdown & Korea.kr RSS Section -->
-    <section class="grid-two-col">
-      <!-- 5. korea.kr RSS 정책 브리핑 최신 5건 이상 정적 목록 및 출처 링크 -->
-      <div class="panel rss-panel">
-        <div class="panel-header">
-          <div>
-            <h2 class="panel-title">
-              <span class="panel-icon">📢</span> 대한민국 정책브리핑 (korea.kr) 최신 소식
-            </h2>
-            <p class="panel-subtitle">정부 주요 청렴·반부패 및 행정 혁신 정책 뉴스</p>
-          </div>
-          <!-- korea.kr RSS 출처 링크 -->
-          <a href="https://www.korea.kr/rss/dept_mois.xml" target="_blank" rel="noopener noreferrer" class="rss-source-link" title="korea.kr RSS 원문 링크 열기">
-            <svg class="rss-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/>
-            </svg>
-            출처: korea.kr RSS
-          </a>
-        </div>
-        
-        <div class="rss-list" id="rss-list-container">
-          <!-- 빌드 시점에 생성된 최신 5건 정적 목록 -->
-          <article class="rss-item">
-            <div class="rss-meta">
-              <span class="rss-tag">국민권익위원회</span>
-              <time class="rss-date">2026-09-18</time>
-            </div>
-            <h3 class="rss-title">
-              <a href="https://www.korea.kr" target="_blank" rel="noopener noreferrer">국민권익위, 2026 공공기관 종합청렴도 평가 기본계획 발표</a>
-            </h3>
-            <p class="rss-desc">공공분야 부패 취약분야 집중 개선 및 반부패·청렴 실천 체계 고도화를 위한 종합 대책 시행</p>
-          </article>
-
-          <article class="rss-item">
-            <div class="rss-meta">
-              <span class="rss-tag">행정안전부</span>
-              <time class="rss-date">2026-09-15</time>
-            </div>
-            <h3 class="rss-title">
-              <a href="https://www.korea.kr" target="_blank" rel="noopener noreferrer">행정안전부, 지방자치단체 공직기강 확립 및 부패예방 모니터링 강화</a>
-            </h3>
-            <p class="rss-desc">공금유용 및 직권남용 근절을 위한 전국 지자체 순회 특별감찰 및 청렴도 향상 지원방안 추진</p>
-          </article>
-
-          <article class="rss-item">
-            <div class="rss-meta">
-              <span class="rss-tag">정책브리핑</span>
-              <time class="rss-date">2026-09-10</time>
-            </div>
-            <h3 class="rss-title">
-              <a href="https://www.korea.kr" target="_blank" rel="noopener noreferrer">공직자 이해충돌방지법 준수 실태 점검 및 청렴교육 강화 가이드 배포</a>
-            </h3>
-            <p class="rss-desc">신고 사건의 투명한 처리와 공직자 윤리 준수를 위한 모바일 청렴 교육 및 신고자 보호제도 안내</p>
-          </article>
-
-          <article class="rss-item">
-            <div class="rss-meta">
-              <span class="rss-tag">국민권익위원회</span>
-              <time class="rss-date">2026-09-05</time>
-            </div>
-            <h3 class="rss-title">
-              <a href="https://www.korea.kr" target="_blank" rel="noopener noreferrer">공공기관 청렴시민감사관 제도 운영 우수사례 공유회 개최</a>
-            </h3>
-            <p class="rss-desc">시민 참여형 감사 및 투명한 행정 모니터링 시스템 구축을 통한 대국민 청렴 신뢰도 제고</p>
-          </article>
-
-          <article class="rss-item">
-            <div class="rss-meta">
-              <span class="rss-tag">기획재정부</span>
-              <time class="rss-date">2026-09-01</time>
-            </div>
-            <h3 class="rss-title">
-              <a href="https://www.korea.kr" target="_blank" rel="noopener noreferrer">예산 집행 투명성 제고를 위한 재정부정수급 방지 시스템 본격 가동</a>
-            </h3>
-            <p class="rss-desc">공공재정 부정청구 및 예산횡령 엄정 대응을 위한 신고 포상금 확대 및 통합 환수 체계</p>
-          </article>
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- Top KPI Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card total">
+        <div class="kpi-icon"><i class="fa-solid fa-folder-open"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-label">전체 신청 건수</span>
+          <span class="kpi-value" id="kpi-total">0<small>건</small></span>
         </div>
       </div>
-
-      <!-- 기관유형별 교육이수율 현황 -->
-      <div class="panel edu-panel">
-        <div class="panel-header">
-          <div>
-            <h2 class="panel-title">
-              <span class="panel-icon">📊</span> 기관유형별 청렴 교육 이수율
-            </h2>
-            <p class="panel-subtitle">공공부문 4대 기관군별 교육 현황 통계</p>
-          </div>
+      <div class="kpi-card approved">
+        <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-label">한도 내 승인 건수</span>
+          <span class="kpi-value" id="kpi-approved">0<small>건</small></span>
         </div>
-        <div class="edu-bar-list" id="edu-bars-container">
-          <div class="edu-bar-item">
-            <div class="edu-bar-header">
-              <span class="edu-org-name">중앙행정기관 (24개 기관)</span>
-              <span class="edu-org-val">79.8%</span>
-            </div>
-            <div class="bar-track">
-              <div class="bar-fill fill-blue" style="width: 79.8%;"></div>
-            </div>
-          </div>
-          <div class="edu-bar-item">
-            <div class="edu-bar-header">
-              <span class="edu-org-name">공공기관 (32개 기관)</span>
-              <span class="edu-org-val">77.9%</span>
-            </div>
-            <div class="bar-track">
-              <div class="bar-fill fill-indigo" style="width: 77.9%;"></div>
-            </div>
-          </div>
-          <div class="edu-bar-item">
-            <div class="edu-bar-header">
-              <span class="edu-org-name">교육기관 (16개 기관)</span>
-              <span class="edu-org-val">77.1%</span>
-            </div>
-            <div class="bar-track">
-              <div class="bar-fill fill-teal" style="width: 77.1%;"></div>
-            </div>
-          </div>
-          <div class="edu-bar-item">
-            <div class="edu-bar-header">
-              <span class="edu-org-name">지방자치단체 (40개 기관)</span>
-              <span class="edu-org-val">72.5%</span>
-            </div>
-            <div class="bar-track">
-              <div class="bar-fill fill-amber" style="width: 72.5%;"></div>
-            </div>
-          </div>
+      </div>
+      <div class="kpi-card rejected">
+        <div class="kpi-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-label">한도 초과 반려 건수</span>
+          <span class="kpi-value" id="kpi-rejected">0<small>건</small></span>
+        </div>
+      </div>
+      <div class="kpi-card budget">
+        <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-label">신청 예산 총액</span>
+          <span class="kpi-value" id="kpi-budget">0<small>천원</small></span>
         </div>
       </div>
     </section>
 
-    <!-- Incident Search and Cards Section -->
-    <section class="incident-search-section">
-      <div class="section-title-wrap">
-        <div>
-          <h2 class="section-heading">청렴 신고 사건 조회 및 모니터링</h2>
-          <p class="section-subheading">시민 누구나 투명하게 신고 접수 및 처리 진행 상황을 확인할 수 있습니다.</p>
+    <!-- Control & Threshold Panel -->
+    <section class="control-panel">
+      <div class="threshold-box">
+        <div class="threshold-header">
+          <div class="threshold-title">
+            <i class="fa-solid fa-sliders"></i>
+            <span>사업 예산 한도액 기준 설정</span>
+          </div>
+          <div class="threshold-display">
+            기준 한도액: <strong id="threshold-val-text">600,000</strong> 천원 (6억원)
+          </div>
         </div>
-        <!-- 4. 화면에 "결과N건" 표시 -->
-        <div class="result-count-badge" id="result-count-container">
-          결과 <span id="result-count" class="count-num">500</span>건
+        <div class="slider-wrapper">
+          <input type="range" id="threshold-slider" min="100000" max="1000000" step="50000" value="600000">
+          <div class="slider-marks">
+            <span>1억원 (10만)</span>
+            <span>3억원 (30만)</span>
+            <span class="active-mark">6억원 (60만 - 기본)</span>
+            <span>8억원 (80만)</span>
+            <span>10억원 (100만)</span>
+          </div>
         </div>
       </div>
 
-      <!-- 3. 신고유형 또는 처리상태로 필터링하여 검색 기능 -->
-      <div class="filter-card">
-        <div class="filter-row main-filters">
-          <!-- 신고유형 필터 -->
-          <div class="filter-group">
-            <label class="filter-label" for="filter-type">
-              <span>신고유형</span>
-            </label>
-            <div class="select-wrapper">
-              <select id="filter-type" class="filter-select">
-                <option value="ALL">전체 유형 (500건)</option>
-                <option value="금품수수">금품수수 (145건)</option>
-                <option value="직권남용">직권남용 (108건)</option>
-                <option value="예산횡령">예산횡령 (89건)</option>
-                <option value="이해충돌">이해충돌 (81건)</option>
-                <option value="공금유용">공금유용 (60건)</option>
-                <option value="기타">기타 (17건)</option>
-              </select>
+      <div class="filter-search-box">
+        <div class="search-input-group">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-input" placeholder="지자체명 또는 사업명 검색...">
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="all">전체보기 (<span id="tab-count-all">0</span>)</button>
+          <button class="filter-tab" data-filter="approved"><i class="fa-solid fa-check"></i> 승인 (<span id="tab-count-approved">0</span>)</button>
+          <button class="filter-tab" data-filter="rejected"><i class="fa-solid fa-xmark"></i> 반려 (<span id="tab-count-rejected">0</span>)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- View Mode Switcher -->
+    <div class="view-header">
+      <div class="section-title">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>신청 자료 현황</span>
+      </div>
+      <div class="view-switcher">
+        <button class="view-btn active" id="btn-view-cards"><i class="fa-solid fa-grip"></i> 카드 뷰</button>
+        <button class="view-btn" id="btn-view-sheets"><i class="fa-solid fa-table"></i> Google Sheets 임베드</button>
+      </div>
+    </div>
+
+    <!-- Section 1: Card View -->
+    <section id="cards-container" class="cards-grid">
+      <!-- JS will dynamically render cards here -->
+    </section>
+
+    <!-- Section 2: Google Sheets Embed View -->
+    <section id="sheets-section" class="sheets-container" style="display: none;">
+      <div class="sheets-card">
+        <div class="sheets-toolbar">
+          <div class="sheets-toolbar-left">
+            <div class="sheets-icon"><i class="fa-solid fa-file-excel"></i></div>
+            <div>
+              <h3>협력사업 신청자료 종합 관리대장 (Google Sheets 동기화)</h3>
+              <p>지자체, 사업명, 예산, 인구수 및 한도액 초과 판정 데이터 실시간 시트</p>
             </div>
           </div>
-
-          <!-- 처리상태 필터 -->
-          <div class="filter-group">
-            <label class="filter-label" for="filter-status">
-              <span>처리상태</span>
-            </label>
-            <div class="select-wrapper">
-              <select id="filter-status" class="filter-select">
-                <option value="ALL">전체 상태</option>
-                <option value="처리완료">처리완료 (229건)</option>
-                <option value="조사중">조사중</option>
-                <option value="접수완료">접수완료</option>
-                <option value="이첩">이첩</option>
-                <option value="기각">기각</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- 지역 / 키워드 검색 -->
-          <div class="filter-group search-group">
-            <label class="filter-label" for="search-input">
-              <span>통합 검색 (지역, 사건ID, 조치결과)</span>
-            </label>
-            <div class="search-box">
-              <input type="text" id="search-input" class="search-input" placeholder="예: 서울, CASE0001, 징계, 검찰이첩...">
-              <button type="button" id="btn-search-clear" class="btn-clear" title="검색어 지우기">✕</button>
-            </div>
+          <div class="sheets-toolbar-right">
+            <button class="action-btn" id="btn-export-csv"><i class="fa-solid fa-file-csv"></i> CSV 내보내기</button>
+            <button class="action-btn" id="btn-print"><i class="fa-solid fa-print"></i> 인쇄 / PDF</button>
           </div>
         </div>
 
-        <!-- 빠른 필터 태그 바 -->
-        <div class="quick-filter-bar">
-          <span class="quick-label">빠른 필터:</span>
-          <button type="button" class="quick-btn active" data-type="ALL" data-status="ALL">전체보기</button>
-          <button type="button" class="quick-btn" data-type="금품수수">금품수수</button>
-          <button type="button" class="quick-btn" data-type="직권남용">직권남용</button>
-          <button type="button" class="quick-btn" data-type="예산횡령">예산횡령</button>
-          <button type="button" class="quick-btn" data-type="이해충돌">이해충돌</button>
-          <button type="button" class="quick-btn" data-type="공금유용">공금유용</button>
-          <span class="divider"></span>
-          <button type="button" class="quick-btn status-btn" data-status="처리완료">✅ 처리완료</button>
-          <button type="button" class="quick-btn status-btn" data-status="조사중">🔍 조사중</button>
-          <button type="button" class="btn-reset" id="btn-reset">초기화 ↺</button>
+        <!-- Embedded Google Sheets Iframe & Interactive Sheet Viewer -->
+        <div class="iframe-container">
+          <div class="sheet-tabs-header">
+            <span class="active-tab"><i class="fa-solid fa-table-cells"></i> Sheet1 - 신청현황 및 심사결과</span>
+            <span class="sheet-badge"><i class="fa-solid fa-cloud-arrow-up"></i> Live Cloud Sync</span>
+          </div>
+          
+          <div class="interactive-sheet-wrap">
+            <table class="google-sheet-table" id="sheet-table">
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th>지자체명</th>
+                  <th>인구수 (명)</th>
+                  <th>사업명</th>
+                  <th>신청예산 (천원)</th>
+                  <th>예산 환산 (억원)</th>
+                  <th>심사 판정</th>
+                  <th>초과/여유액 (천원)</th>
+                </tr>
+              </thead>
+              <tbody id="sheet-table-body">
+                <!-- JS will populate rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Real Google Sheets Embed Iframe Area -->
+          <div class="google-embed-frame-wrapper">
+            <div class="embed-title-bar">
+              <i class="fa-brands fa-google-drive"></i> 구글 스프레드시트 웹 배포(Published) 임베드 뷰
+            </div>
+            <iframe 
+              id="google-sheets-iframe"
+              src="https://docs.google.com/spreadsheets/d/e/2PACX-1vT17kUe05hR_p8hW_placeholder_gov_project/pubhtml?widget=true&amp;headers=false"
+              title="지자체 협력사업 Google Sheets 대장"
+              loading="lazy">
+            </iframe>
+            <div class="iframe-fallback-note">
+              <i class="fa-solid fa-circle-info"></i> ※ Google Sheets 웹 게시 URL이 연결된 상태에서는 위 프레임에 실시간 클라우드 스프레드시트가 직접 렌더링되며, 상단 테이블에서도 즉시 실시간 필터 및 계산이 연동됩니다.
+            </div>
+          </div>
         </div>
-      </div>
-
-      <!-- 2. 신고일자, 신고유형, 지역, 처리상태를 카드 형태로 사건 카드를 표시 -->
-      <div class="cards-grid" id="incident-cards-container">
-        <!-- JS로 동적 렌더링 -->
-      </div>
-
-      <!-- Pagination / Loading Controls -->
-      <div class="pagination-wrapper" id="pagination-wrapper">
-        <button type="button" class="page-btn" id="btn-prev-page">이전</button>
-        <span class="page-info" id="page-info">1 / 42 페이지</span>
-        <button type="button" class="page-btn" id="btn-next-page">다음</button>
       </div>
     </section>
   </main>
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="container footer-content">
-      <div class="footer-info">
-        <p class="footer-title">청렴감사관실 청렴포털 시민 모니터링 시스템</p>
-        <p class="footer-desc">본 페이지는 부패방지 및 공직자 청렴윤리 확립을 위해 신고 사건 현황과 교육 통계를 시민에게 투명하게 공개합니다.</p>
-        <p class="footer-rss-note">
-          공식 정책 뉴스 출처: <a href="https://www.korea.kr/rss/dept_mois.xml" target="_blank" rel="noopener noreferrer">대한민국 정책브리핑 (https://www.korea.kr)</a>
-        </p>
-      </div>
-      <div class="footer-copy">
-        <p>&copy; 2026 청렴감사관실. All rights reserved.</p>
-      </div>
-    </div>
+    <p>© 2026 자치행정협력사업 심사관리시스템 | 지자체 협력사업 신청자료 자동화 프로세스</p>
   </footer>
 
-  <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

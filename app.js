@@ -1,340 +1,383 @@
 /**
- * 청렴감사관실 청렴 윤리 모니터링 포털 - Frontend Logic
- * - 신고 사건 검색 / 다중 필터링 (신고유형, 처리상태, 키워드)
- * - 결과 건수 표시 ("결과 N건")
- * - 사건 카드 그리드 렌더링 (신고일자, 신고유형, 지역, 처리상태)
- * - korea.kr RSS 정적 목록 및 교육 이수율 표시
+ * 지자체 협력사업 심사 시스템 애플리케이션 (app.js)
  */
 
-// 전역 상태
-let allIncidents = [];
-let filteredIncidents = [];
-let currentPage = 1;
-const pageSize = 12;
+// 로컬 파일 직접 열기(file://) 등 CORS 상황 대비용 기본 내장 데이터 (신청목록.json과 100% 동일)
+const FALLBACK_DATA = [
+  {
+    "지자체명": "가람군",
+    "인구수": 30000,
+    "신청액": 250000,
+    "예산": 250000,
+    "사업명": "가람군 청년 농촌 정착 지원 사업"
+  },
+  {
+    "지자체명": "나봄시",
+    "인구수": 45000,
+    "신청액": 500000,
+    "예산": 500000,
+    "사업명": "나봄시 스마트 관광 플랫폼 구축"
+  },
+  {
+    "지자체명": "다솔구",
+    "인구수": 80000,
+    "신청액": 600000,
+    "예산": 600000,
+    "사업명": "다솔구 어르신 디지털 친화 도시 조성"
+  },
+  {
+    "지자체명": "라윤시",
+    "인구수": 60000,
+    "신청액": 700000,
+    "예산": 700000,
+    "사업명": "라윤시 도심 보행자 안전망 구축"
+  },
+  {
+    "지자체명": "마을군",
+    "인구수": 25000,
+    "신청액": 200000,
+    "예산": 200000,
+    "사업명": "마을군 지역화폐 활성화 사업"
+  },
+  {
+    "지자체명": "바람시",
+    "인구수": 100000,
+    "신청액": 950000,
+    "예산": 950000,
+    "사업명": "바람시 친환경 에너지 전환 사업"
+  },
+  {
+    "지자체명": "사계구",
+    "인구수": 55000,
+    "신청액": 600000,
+    "예산": 600000,
+    "사업명": "사계구 청소년 안심 귀가 시스템"
+  },
+  {
+    "지자체명": "아현시",
+    "인구수": 70000,
+    "신청액": 650000,
+    "예산": 650000,
+    "사업명": "아현시 도시재생 거점공간 조성"
+  },
+  {
+    "지자체명": "자연군",
+    "인구수": 40000,
+    "신청액": 380000,
+    "예산": 380000,
+    "사업명": "자연군 생태관광 마을 조성"
+  },
+  {
+    "지자체명": "차돌시",
+    "인구수": 90000,
+    "신청액": 880000,
+    "예산": 880000,
+    "사업명": "차돌시 산업단지 디지털 전환 사업"
+  }
+];
 
-// DOM 요소
-const filterTypeEl = document.getElementById('filter-type');
-const filterStatusEl = document.getElementById('filter-status');
-const searchInputEl = document.getElementById('search-input');
-const btnSearchClearEl = document.getElementById('btn-search-clear');
-const btnResetEl = document.getElementById('btn-reset');
-const resultCountEl = document.getElementById('result-count');
-const cardsContainerEl = document.getElementById('incident-cards-container');
-const pageInfoEl = document.getElementById('page-info');
-const btnPrevPageEl = document.getElementById('btn-prev-page');
-const btnNextPageEl = document.getElementById('btn-next-page');
-const quickBtns = document.querySelectorAll('.quick-btn');
+// 상태 관리
+let applications = [];
+let currentThreshold = 600000; // 기본 한도액: 600,000 천원 (6억원)
+let currentFilter = 'all'; // 'all', 'approved', 'rejected'
+let searchKeyword = '';
 
-/**
- * 초기 데이터 로드 (data.json fetch 시도 -> 로컬 fetch 불가능 시 fallback 데이터 사용)
- */
-async function loadData() {
+// DOM Elements
+const kpiTotalEl = document.getElementById('kpi-total');
+const kpiApprovedEl = document.getElementById('kpi-approved');
+const kpiRejectedEl = document.getElementById('kpi-rejected');
+const kpiBudgetEl = document.getElementById('kpi-budget');
+
+const thresholdSlider = document.getElementById('threshold-slider');
+const thresholdValText = document.getElementById('threshold-val-text');
+const searchInput = document.getElementById('search-input');
+const filterTabs = document.querySelectorAll('.filter-tab');
+
+const tabCountAll = document.getElementById('tab-count-all');
+const tabCountApproved = document.getElementById('tab-count-approved');
+const tabCountRejected = document.getElementById('tab-count-rejected');
+
+const cardsContainer = document.getElementById('cards-container');
+const sheetTableBody = document.getElementById('sheet-table-body');
+const sheetsSection = document.getElementById('sheets-section');
+
+const btnViewCards = document.getElementById('btn-view-cards');
+const btnViewSheets = document.getElementById('btn-view-sheets');
+const btnExportCsv = document.getElementById('btn-export-csv');
+const btnPrint = document.getElementById('btn-print');
+
+// 데이터 로드
+async function loadApplications() {
   try {
-    const res = await fetch('data.json');
-    if (!res.ok) throw new Error('Fetch failed');
-    const data = await res.json();
-    initDashboard(data);
-  } catch (err) {
-    console.warn('data.json을 직접 fetch할 수 없어 내장 데이터 또는 fallback 모드로 동작합니다.', err);
-    // fallback 데이터 로드 시도
-    if (window.__FALLBACK_DATA__) {
-      initDashboard(window.__FALLBACK_DATA__);
+    const response = await fetch('신청목록.json');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    applications = await response.json();
+  } catch (error) {
+    console.warn('신청목록.json fetch 실패 또는 로컬 파일 모드 감지됨. 백업 데이터를 로드합니다.', error);
+    applications = JSON.parse(JSON.stringify(FALLBACK_DATA));
   }
+  
+  renderApp();
 }
 
-/**
- * 대시보드 초기화
- */
-function initDashboard(data) {
-  if (!data) return;
-
-  // 1. KPI 지표 업데이트
-  if (data.summary) {
-    const { total_incidents, completed_incidents, avg_duration } = data.summary;
-    const totalEl = document.getElementById('kpi-total');
-    const completedEl = document.getElementById('kpi-completed');
-    const avgDurationEl = document.getElementById('kpi-avg-duration');
-    const rateEl = document.getElementById('kpi-complete-rate');
-
-    if (totalEl) totalEl.innerHTML = `${total_incidents}<span class="unit">건</span>`;
-    if (completedEl) completedEl.innerHTML = `${completed_incidents}<span class="unit">건</span>`;
-    if (avgDurationEl) avgDurationEl.innerHTML = `${avg_duration}<span class="unit">일</span>`;
-    if (rateEl && total_incidents > 0) {
-      rateEl.textContent = `${((completed_incidents / total_incidents) * 100).toFixed(1)}%`;
-    }
-  }
-
-  // 2. 사건 데이터 설정
-  allIncidents = data.incidents || [];
-  filteredIncidents = [...allIncidents];
-
-  // 3. 이벤트 리스너 바인딩
-  setupEventListeners();
-
-  // 4. 초기 렌더링
-  applyFilters();
+// 금액 포맷터
+function formatNumber(num) {
+  return Number(num).toLocaleString('ko-KR');
 }
 
-/**
- * 이벤트 리스너 등록
- */
-function setupEventListeners() {
-  // 필터 변경 시
-  filterTypeEl.addEventListener('change', () => {
-    syncQuickButtons();
-    applyFilters();
-  });
-
-  filterStatusEl.addEventListener('change', () => {
-    syncQuickButtons();
-    applyFilters();
-  });
-
-  // 검색어 입력 시 실시간 반영
-  searchInputEl.addEventListener('input', (e) => {
-    if (e.target.value.trim().length > 0) {
-      btnSearchClearEl.classList.add('show');
-    } else {
-      btnSearchClearEl.classList.remove('show');
-    }
-    applyFilters();
-  });
-
-  // 검색어 지우기
-  btnSearchClearEl.addEventListener('click', () => {
-    searchInputEl.value = '';
-    btnSearchClearEl.classList.remove('show');
-    searchInputEl.focus();
-    applyFilters();
-  });
-
-  // 초기화 버튼
-  btnResetEl.addEventListener('click', () => {
-    filterTypeEl.value = 'ALL';
-    filterStatusEl.value = 'ALL';
-    searchInputEl.value = '';
-    btnSearchClearEl.classList.remove('show');
-    syncQuickButtons();
-    applyFilters();
-  });
-
-  // 빠른 필터 버튼 클릭
-  quickBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const type = btn.getAttribute('data-type');
-      const status = btn.getAttribute('data-status');
-
-      if (type) {
-        filterTypeEl.value = type;
-      }
-      if (status) {
-        filterStatusEl.value = status;
-      }
-
-      syncQuickButtons();
-      applyFilters();
-    });
-  });
-
-  // 페이지네이션
-  btnPrevPageEl.addEventListener('click', () => {
-    if (currentPage > 1) {
-      currentPage--;
-      renderCards();
-      window.scrollTo({ top: document.querySelector('.incident-search-section').offsetTop - 30, behavior: 'smooth' });
-    }
-  });
-
-  btnNextPageEl.addEventListener('click', () => {
-    const totalPages = Math.ceil(filteredIncidents.length / pageSize) || 1;
-    if (currentPage < totalPages) {
-      currentPage++;
-      renderCards();
-      window.scrollTo({ top: document.querySelector('.incident-search-section').offsetTop - 30, behavior: 'smooth' });
-    }
-  });
+// 억 단위 환산
+function formatInBillion(thousandWon) {
+  const won = thousandWon * 1000;
+  const billion = (won / 100000000).toFixed(1);
+  return `${billion}억`;
 }
 
-/**
- * 빠른 필터 버튼 활성화 상태 동기화
- */
-function syncQuickButtons() {
-  const currentType = filterTypeEl.value;
-  const currentStatus = filterStatusEl.value;
-
-  quickBtns.forEach((btn) => {
-    const bType = btn.getAttribute('data-type');
-    const bStatus = btn.getAttribute('data-status');
-
-    if (bType && bStatus && bType === 'ALL' && bStatus === 'ALL') {
-      btn.classList.toggle('active', currentType === 'ALL' && currentStatus === 'ALL');
-    } else if (bType && !bStatus) {
-      btn.classList.toggle('active', currentType === bType);
-    } else if (bStatus && !bType) {
-      btn.classList.toggle('active', currentStatus === bStatus);
-    }
+// 애플리케이션 전체 렌더링
+function renderApp() {
+  // 1. 심사 판정 및 데이터 가공
+  const processedData = applications.map((item, index) => {
+    const budget = item.예산 || item.신청액 || 0;
+    const isOverLimit = budget > currentThreshold;
+    const diff = budget - currentThreshold;
+    
+    return {
+      ...item,
+      id: index + 1,
+      budget,
+      isApproved: !isOverLimit,
+      diff: Math.abs(diff),
+      isOverLimit
+    };
   });
-}
 
-/**
- * 3. 신고유형 또는 처리상태, 검색어로 필터링
- */
-function applyFilters() {
-  const selectedType = filterTypeEl.value;
-  const selectedStatus = filterStatusEl.value;
-  const keyword = searchInputEl.value.trim().toLowerCase();
+  // 2. 통계 KPI 업데이트
+  const totalCount = processedData.length;
+  const approvedCount = processedData.filter(d => d.isApproved).length;
+  const rejectedCount = processedData.filter(d => !d.isApproved).length;
+  const totalBudget = processedData.reduce((sum, d) => sum + d.budget, 0);
 
-  filteredIncidents = allIncidents.filter((item) => {
-    // 1) 신고유형 매칭
-    if (selectedType !== 'ALL' && item['신고유형'] !== selectedType) {
-      return false;
-    }
+  kpiTotalEl.innerHTML = `${totalCount}<small>건</small>`;
+  kpiApprovedEl.innerHTML = `${approvedCount}<small>건</small>`;
+  kpiRejectedEl.innerHTML = `${rejectedCount}<small>건</small>`;
+  kpiBudgetEl.innerHTML = `${formatNumber(totalBudget)}<small>천원</small>`;
 
-    // 2) 처리상태 매칭
-    if (selectedStatus !== 'ALL' && item['처리상태'] !== selectedStatus) {
-      return false;
-    }
+  tabCountAll.textContent = totalCount;
+  tabCountApproved.textContent = approvedCount;
+  tabCountRejected.textContent = rejectedCount;
 
-    // 3) 키워드 검색 (사건ID, 지역, 조치결과, 신고자유형 등)
-    if (keyword) {
-      const matchId = (item['사건ID'] || '').toLowerCase().includes(keyword);
-      const matchRegion = (item['지역'] || '').toLowerCase().includes(keyword);
-      const matchType = (item['신고유형'] || '').toLowerCase().includes(keyword);
-      const matchStatus = (item['처리상태'] || '').toLowerCase().includes(keyword);
-      const matchResult = (item['조치결과'] || '').toLowerCase().includes(keyword);
-      const matchReporter = (item['신고자유형'] || '').toLowerCase().includes(keyword);
+  // 3. 필터 및 검색 적용
+  const filteredData = processedData.filter(item => {
+    // 탭 필터
+    if (currentFilter === 'approved' && !item.isApproved) return false;
+    if (currentFilter === 'rejected' && item.isApproved) return false;
 
-      if (!matchId && !matchRegion && !matchType && !matchStatus && !matchResult && !matchReporter) {
-        return false;
-      }
+    // 검색어 필터
+    if (searchKeyword.trim() !== '') {
+      const kw = searchKeyword.trim().toLowerCase();
+      const matchGov = item.지자체명.toLowerCase().includes(kw);
+      const matchProject = item.사업명.toLowerCase().includes(kw);
+      if (!matchGov && !matchProject) return false;
     }
 
     return true;
   });
 
-  // 4. 화면에 "결과N건" 표시 업데이트
-  resultCountEl.textContent = filteredIncidents.length.toLocaleString();
+  // 4. 카드 렌더링
+  renderCards(filteredData);
 
-  // 첫 페이지로 리셋 후 렌더링
-  currentPage = 1;
-  renderCards();
+  // 5. 시트 테이블 렌더링
+  renderSheetTable(processedData);
 }
 
-/**
- * 처리상태에 따른 배지 HTML 반환
- */
-function getStatusBadge(status) {
-  switch (status) {
-    case '처리완료':
-      return `<span class="status-badge status-completed">✅ 처리완료</span>`;
-    case '조사중':
-      return `<span class="status-badge status-investigating">🔍 조사중</span>`;
-    case '접수완료':
-      return `<span class="status-badge status-received">📥 접수완료</span>`;
-    case '이첩':
-      return `<span class="status-badge status-transferred">↗️ 이첩</span>`;
-    case '기각':
-      return `<span class="status-badge status-dismissed">⛔ 기각</span>`;
-    default:
-      return `<span class="status-badge">${status || '상태미정'}</span>`;
-  }
-}
+// 카드 렌더링 함수
+function renderCards(data) {
+  cardsContainer.innerHTML = '';
 
-/**
- * 2. 신고일자, 신고유형, 지역, 처리상태를 카드 형태로 사건 카드 렌더링
- */
-function renderCards() {
-  cardsContainerEl.innerHTML = '';
-
-  if (filteredIncidents.length === 0) {
-    cardsContainerEl.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <h3 class="empty-title">조건에 일치하는 신고 사건이 없습니다</h3>
-        <p class="empty-desc">필터 조건을 변경하거나 검색어를 다시 확인해보세요.</p>
+  if (data.length === 0) {
+    cardsContainer.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; color: #64748b;">
+        <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; color: #94a3b8; margin-bottom: 1rem;"></i>
+        <p style="font-size: 1.1rem; font-weight: 600;">조건에 해당하는 신청 내역이 없습니다.</p>
+        <p style="font-size: 0.9rem; margin-top: 0.3rem;">검색어나 한도액 설정을 조정해 보세요.</p>
       </div>
     `;
-    updatePagination(0);
     return;
   }
 
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, filteredIncidents.length);
-  const pageItems = filteredIncidents.slice(startIndex, endIndex);
+  data.forEach(item => {
+    const card = document.createElement('div');
+    const isApproved = item.isApproved;
+    card.className = `app-card ${isApproved ? 'card-approved' : 'card-rejected'}`;
 
-  const fragment = document.createDocumentFragment();
+    const statusBadgeHtml = isApproved
+      ? `<span class="status-tag approved"><i class="fa-solid fa-circle-check"></i> 심사 승인 (적합)</span>`
+      : `<span class="status-tag rejected"><i class="fa-solid fa-circle-xmark"></i> 한도 초과 (반려)</span>`;
 
-  pageItems.forEach((incident) => {
-    const card = document.createElement('article');
-    card.className = 'incident-card';
-
-    // 주요 필드 (신고일자, 신고유형, 지역, 처리상태)
-    const reportDate = incident['신고일자'] || '-';
-    const reportType = incident['신고유형'] || '미분류';
-    const region = incident['지역'] || '-';
-    const status = incident['처리상태'] || '-';
-
-    // 부가 필드
-    const caseId = incident['사건ID'] || '';
-    const reporterType = incident['신고자유형'] || '-';
-    const duration = incident['처리기간_일'] ? `${incident['처리기간_일']}일` : '진행중 (결측)';
-    const amount = incident['위반금액_만원'] ? `${Number(incident['위반금액_만원']).toLocaleString()}만원` : '-';
-    const actionResult = incident['조치결과'] || '-';
+    const statusReasonHtml = isApproved
+      ? `<i class="fa-solid fa-check-double"></i> 예산 기준(${formatNumber(currentThreshold)}천원) 이하 정상 승인`
+      : `<i class="fa-solid fa-triangle-exclamation"></i> 한도액 초과: ${formatNumber(item.diff)}천원 초과 신청됨`;
 
     card.innerHTML = `
-      <div>
-        <div class="card-top">
-          <span class="card-case-id">${caseId}</span>
-          ${getStatusBadge(status)}
+      <div class="card-header-status">
+        <div class="gov-name-badge">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>${item.지자체명}</span>
         </div>
-        <h3 class="card-main-title">
-          <span class="type-tag">[${reportType}]</span> 사건 모니터링
-        </h3>
-        <div class="card-info-table">
-          <div class="info-item">
-            <span class="info-label">📅 신고일자</span>
-            <span class="info-val">${reportDate}</span>
+        ${statusBadgeHtml}
+      </div>
+      
+      <div class="card-body">
+        <h3 class="project-title">${item.사업명}</h3>
+        
+        <div class="card-meta-list">
+          <div class="meta-item">
+            <span class="meta-label">관할 인구수</span>
+            <span class="meta-value">${formatNumber(item.인구수)}명</span>
           </div>
-          <div class="info-item">
-            <span class="info-label">📍 지역</span>
-            <span class="info-val">${region}</span>
+          <div class="meta-item">
+            <span class="meta-label">예산 규모</span>
+            <span class="meta-value">${formatInBillion(item.budget)}원</span>
           </div>
-          <div class="info-item">
-            <span class="info-label">👤 신고자</span>
-            <span class="info-val">${reporterType}</span>
+        </div>
+
+        <div class="card-budget-box">
+          <div>
+            <div class="budget-detail-label">신청 예산</div>
+            <div style="font-size: 0.75rem; color: #64748b;">(단위: 천원)</div>
           </div>
-          <div class="info-item">
-            <span class="info-label">⏱️ 처리기간</span>
-            <span class="info-val">${duration}</span>
+          <div class="budget-amount">
+            ${formatNumber(item.budget)} <span style="font-size: 0.85rem; font-weight: normal; color: #64748b;">천원</span>
           </div>
         </div>
       </div>
-      <div class="card-footer-meta">
-        <span>위반금액: <strong>${amount}</strong></span>
-        <span class="meta-action">조치: ${actionResult}</span>
+
+      <div class="card-footer-reason">
+        ${statusReasonHtml}
       </div>
     `;
 
-    fragment.appendChild(card);
+    cardsContainer.appendChild(card);
+  });
+}
+
+// 구글 시트 테이블 렌더링
+function renderSheetTable(data) {
+  sheetTableBody.innerHTML = '';
+
+  data.forEach((item, index) => {
+    const tr = document.createElement('tr');
+    const isApproved = item.isApproved;
+
+    const diffText = isApproved
+      ? `-${formatNumber(item.diff)} (여유)`
+      : `+${formatNumber(item.diff)} (초과)`;
+
+    tr.innerHTML = `
+      <td class="col-num">${index + 1}</td>
+      <td style="font-weight: 700;">${item.지자체명}</td>
+      <td>${formatNumber(item.인구수)}</td>
+      <td style="font-weight: 600; color: #1e293b;">${item.사업명}</td>
+      <td style="font-weight: 700; font-family: 'Inter', sans-serif;">${formatNumber(item.budget)}</td>
+      <td>${formatInBillion(item.budget)}원</td>
+      <td>
+        <span class="table-badge ${isApproved ? 'approved' : 'rejected'}">
+          ${isApproved ? '승인' : '반려'}
+        </span>
+      </td>
+      <td style="color: ${isApproved ? '#059669' : '#dc2626'}; font-weight: 600; font-family: 'Inter', sans-serif;">
+        ${diffText}
+      </td>
+    `;
+    sheetTableBody.appendChild(tr);
+  });
+}
+
+// 이벤트 리스너 설정
+function initEvents() {
+  // 1. 한도액 슬라이더
+  thresholdSlider.addEventListener('input', (e) => {
+    currentThreshold = parseInt(e.target.value, 10);
+    thresholdValText.textContent = formatNumber(currentThreshold);
+    renderApp();
   });
 
-  cardsContainerEl.appendChild(fragment);
-  updatePagination(filteredIncidents.length);
+  // 2. 검색창
+  searchInput.addEventListener('input', (e) => {
+    searchKeyword = e.target.value;
+    renderApp();
+  });
+
+  // 3. 필터 탭
+  filterTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      filterTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentFilter = tab.dataset.filter;
+      renderApp();
+    });
+  });
+
+  // 4. 뷰 전환
+  btnViewCards.addEventListener('click', () => {
+    btnViewCards.classList.add('active');
+    btnViewSheets.classList.remove('active');
+    cardsContainer.style.display = 'grid';
+    sheetsSection.style.display = 'none';
+  });
+
+  btnViewSheets.addEventListener('click', () => {
+    btnViewSheets.classList.add('active');
+    btnViewCards.classList.remove('active');
+    cardsContainer.style.display = 'none';
+    sheetsSection.style.display = 'block';
+  });
+
+  // 5. CSV 내보내기
+  btnExportCsv.addEventListener('click', () => {
+    exportToCsv();
+  });
+
+  // 6. 인쇄 / PDF
+  btnPrint.addEventListener('click', () => {
+    window.print();
+  });
 }
 
-/**
- * 페이지네이션 UI 업데이트
- */
-function updatePagination(totalItems) {
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-  pageInfoEl.textContent = `${currentPage} / ${totalPages} 페이지`;
+// CSV 파일 다운로드 로직
+function exportToCsv() {
+  const headers = ["번호", "지자체명", "인구수", "사업명", "신청예산(천원)", "예산환산(억원)", "심사판정", "초과여유액(천원)"];
+  const rows = applications.map((item, idx) => {
+    const budget = item.예산 || item.신청액 || 0;
+    const isApproved = budget <= currentThreshold;
+    const diff = isApproved ? `-${currentThreshold - budget}` : `+${budget - currentThreshold}`;
+    return [
+      idx + 1,
+      `"${item.지자체명}"`,
+      item.인구수,
+      `"${item.사업명.replace(/"/g, '""')}"`,
+      budget,
+      `"${formatInBillion(budget)}원"`,
+      isApproved ? "승인" : "반려",
+      `"${diff}"`
+    ];
+  });
 
-  btnPrevPageEl.disabled = currentPage <= 1;
-  btnNextPageEl.disabled = currentPage >= totalPages;
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `협력사업_심사결과대장_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
-// DOMContentLoaded 시 실행
+// 초기화 시작
 document.addEventListener('DOMContentLoaded', () => {
-  loadData();
+  initEvents();
+  loadApplications();
 });
